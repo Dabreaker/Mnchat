@@ -1,0 +1,15 @@
+{
+  "name": "mahim-nur-chat",
+  "version": "1.0.0",
+  "description": "Private chat app for Mahim & Nur",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@vercel/blob": "^0.27.0",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
