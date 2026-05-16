@@ -1,1 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<title>M & N</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#ffffff"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 
+:root {
+  --ios-blue: #007AFF;
+  --ios-green: #34C759;
+  --ios-red: #FF3B30;
+  --ios-orange: #FF9500;
+  --ios-gray: #8E8E93;
+  --ios-gray2: #AEAEB2;
+  --ios-gray3: #C7C7CC;
+  --ios-gray4: #D1D1D6;
+  --ios-gray5: #E5E5EA;
+  --ios-gray6: #F2F2F7;
+  --bg: #F2F2F7;
+  --surface: #FFFFFF;
+  --text: #000000;
+  --text-secondary: #3C3C43;
+  --text-tertiary: rgba(60,60,67,0.6);
+  --separator: rgba(60,60,67,0.12);
+  --bubble-out: #007AFF;
+  --bubble-out-text: #FFFFFF;
+  --bubble-in: #E9E9EB;
+  --bubble-in-text: #000000;
+  --font: -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html { height: 100%; height: -webkit-fill-available; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  height: -webkit-fill-available;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.screen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.screen.hidden { opacity:0; pointer-events:none; transform:translateX(24px); }
+
+/* ─── SPLASH ───────────────────────────────── */
+#splash {
+  background: var(--surface);
+  align-items: center; justify-content: center; gap: 18px;
+}
+.splash-icon {
+  width: 88px; height: 88px; border-radius: 22px;
+  background: linear-gradient(145deg, #007AFF, #5AC8FA);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px;
+  box-shadow: 0 8px 30px rgba(0,122,255,0.32);
+}
+.splash-name { font-size: 26px; font-weight: 700; letter-spacing: -0.4px; }
+.splash-sub { font-size: 15px; color: var(--ios-gray); margin-top: -10px; }
+.splash-spin {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2.5px solid var(--ios-gray5); border-top-color: var(--ios-blue);
+  animation: spin 0.7s linear infinite; margin-top: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── LOGIN ────────────────────────────────── */
+#login { background: var(--bg); }
+.login-top {
+  padding: calc(var(--safe-top) + 56px) 24px 24px;
+  text-align: center;
+}
+.login-icon {
+  width: 72px; height: 72px; border-radius: 18px;
+  background: linear-gradient(145deg, #007AFF, #5AC8FA);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 34px; margin-bottom: 14px;
+  box-shadow: 0 5px 18px rgba(0,122,255,0.28);
+}
+.login-title { font-size: 26px; font-weight: 700; letter-spacing: -0.4px; }
+.login-sub { font-size: 15px; color: var(--ios-gray); margin-top: 5px; }
+.login-body { padding: 8px 16px; }
+.ios-group {
+  background: var(--surface); border-radius: 10px;
+  overflow: hidden; margin-bottom: 12px;
+  box-shadow: 0 1px 0 var(--separator);
+}
+.ios-row {
+  display: flex; align-items: center;
+  padding: 0 16px; min-height: 44px;
+  border-bottom: 0.5px solid var(--separator);
+  gap: 10px;
+}
+.ios-row:last-child { border-bottom: none; }
+.ios-row label { font-size: 17px; min-width: 90px; flex-shrink: 0; }
+.ios-row input {
+  flex: 1; border: none; outline: none;
+  font-family: var(--font); font-size: 17px; color: var(--text);
+  background: transparent; padding: 11px 0;
+}
+.ios-row input::placeholder { color: var(--ios-gray3); }
+.ios-btn {
+  display: block; width: 100%; padding: 14px;
+  background: var(--ios-blue); color: white;
+  border: none; border-radius: 10px;
+  font-family: var(--font); font-size: 17px; font-weight: 600;
+  cursor: pointer; margin-bottom: 10px;
+  -webkit-appearance: none; transition: opacity 0.15s;
+}
+.ios-btn:active { opacity: 0.75; }
+.login-err {
+  text-align: center; font-size: 14px;
+  color: var(--ios-red); min-height: 22px; padding: 2px;
+}
+
+/* ─── HEADER ───────────────────────────────── */
+#chat { background: var(--bg); }
+.chat-hdr {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid var(--separator);
+  padding: calc(var(--safe-top) + 8px) 12px 10px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; position: relative; z-index: 10;
+}
+.duo-av {
+  width: 42px; height: 42px; position: relative; flex-shrink: 0;
+}
+.duo-av .av1, .duo-av .av2 {
+  width: 28px; height: 28px; border-radius: 50%;
+  position: absolute; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700;
+  color: white; border: 2.5px solid var(--surface);
+}
+.duo-av .av1 { top:0; left:0; background: linear-gradient(135deg,#007AFF,#5AC8FA); z-index:2; }
+.duo-av .av2 { bottom:0; right:0; background: linear-gradient(135deg,#FF9500,#FF3B30); }
+.hdr-info { flex:1; min-width:0; }
+.hdr-name { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+.hdr-status { font-size: 12px; color: var(--ios-gray); margin-top: 1px; }
+.hdr-status.on { color: var(--ios-green); }
+.hdr-ico {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--ios-gray6); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0; transition: opacity 0.15s;
+}
+.hdr-ico:active { opacity: 0.6; }
+.hdr-ico.notif-on { background: rgba(0,122,255,0.12); }
+
+/* ─── MESSAGES ─────────────────────────────── */
+.msgs {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 10px 0 6px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+.msgs::-webkit-scrollbar { display: none; }
+
+.day-lbl {
+  text-align: center; margin: 10px 0 4px;
+  font-size: 12px; font-weight: 500;
+  color: var(--ios-gray); letter-spacing: 0.1px;
+}
+
+.mrow {
+  display: flex; padding: 1px 14px;
+  gap: 7px; align-items: flex-end;
+}
+.mrow.out { flex-direction: row-reverse; }
+
+.mav {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: white;
+  flex-shrink: 0; margin-bottom: 2px;
+}
+.mav.hide { visibility: hidden; }
+.mav.m { background: linear-gradient(135deg,#007AFF,#5AC8FA); }
+.mav.n { background: linear-gradient(135deg,#FF9500,#FF3B30); }
+
+.mcol {
+  display: flex; flex-direction: column; max-width: 74%; gap: 2px;
+}
+.mrow.out .mcol { align-items: flex-end; }
+
+.sender-name {
+  font-size: 12px; font-weight: 600; padding: 0 10px;
+  margin-bottom: 1px;
+}
+.sender-name.m { color: #007AFF; }
+.sender-name.n { color: #FF9500; }
+
+.bub {
+  padding: 8px 12px; border-radius: 18px;
+  font-size: 16px; line-height: 1.45;
+  word-break: break-word; max-width: 100%;
+  position: relative;
+}
+.bub.in {
+  background: var(--bubble-in); color: var(--bubble-in-text);
+  border-bottom-left-radius: 4px;
+}
+.bub.out {
+  background: var(--bubble-out); color: var(--bubble-out-text);
+  border-bottom-right-radius: 4px;
+}
+.bub.in.g { border-bottom-left-radius: 18px; }
+.bub.out.g { border-bottom-right-radius: 18px; }
+
+/* Bubble tails */
+.bub.in:not(.g)::before {
+  content: '';
+  position: absolute; bottom: 0; left: -6px;
+  width: 12px; height: 14px;
+  background: var(--bubble-in);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+.bub.out:not(.g)::before {
+  content: '';
+  position: absolute; bottom: 0; right: -6px;
+  width: 12px; height: 14px;
+  background: var(--bubble-out);
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+}
+
+/* Media bubble */
+.bub.media { padding: 3px; overflow: hidden; }
+.bub.media img, .bub.media video {
+  display: block; max-width: 100%; max-height: 220px;
+  border-radius: 15px; object-fit: cover; cursor: pointer;
+}
+.bub.media .mcap {
+  font-size: 14px; padding: 5px 8px 2px;
+}
+
+/* Audio */
+.bub audio { width: 210px; height: 30px; display: block; accent-color: var(--ios-blue); }
+.bub.out audio { accent-color: rgba(255,255,255,0.85); }
+
+/* Doc */
+.doc-row {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: inherit;
+}
+.doc-ic {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+  background: rgba(255,255,255,0.18);
+}
+.bub.in .doc-ic { background: rgba(0,0,0,0.06); }
+.doc-meta { min-width: 0; }
+.doc-nm { font-size: 14px; font-weight: 500; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 160px; }
+.doc-sz { font-size: 12px; opacity: 0.65; margin-top: 2px; }
+
+.mtime {
+  font-size: 11px; color: var(--ios-gray2); padding: 0 3px; margin-top: 1px;
+}
+.mrow.out .mtime { text-align: right; }
+
+/* ─── TYPING ───────────────────────────────── */
+.typing-row {
+  display: flex; align-items: flex-end;
+  gap: 7px; padding: 3px 14px;
+  opacity: 0; transition: opacity 0.25s; pointer-events: none;
+}
+.typing-row.show { opacity: 1; }
+.typing-bub {
+  background: var(--bubble-in); border-radius: 18px 18px 18px 4px;
+  padding: 9px 13px; display: flex; gap: 4px; align-items: center;
+}
+.typing-bub span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ios-gray2); animation: tdot 1.2s infinite;
+}
+.typing-bub span:nth-child(2) { animation-delay: 0.15s; }
+.typing-bub span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes tdot {
+  0%,60%,100% { transform:scale(0.75); opacity:0.4; }
+  30% { transform:scale(1.1); opacity:1; }
+}
+
+/* ─── INPUT ────────────────────────────────── */
+.inp-area {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top: 0.5px solid var(--separator);
+  padding: 8px 10px calc(var(--safe-bottom) + 8px);
+  flex-shrink: 0;
+}
+.att-pill {
+  display: none; align-items: center; gap: 8px;
+  background: var(--ios-gray6); border-radius: 10px;
+  padding: 7px 10px; margin-bottom: 8px;
+}
+.att-pill.show { display: flex; }
+.att-pill img { height: 42px; border-radius: 6px; object-fit: cover; }
+.pill-ic { font-size: 22px; }
+.pill-nm { flex:1; font-size: 13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--text-secondary); }
+.pill-x {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--ios-gray3); border: none; color: white;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.inp-row { display: flex; align-items: flex-end; gap: 7px; }
+.circ {
+  width: 33px; height: 33px; border-radius: 50%;
+  background: var(--ios-gray6); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; align-self: flex-end;
+  transition: transform 0.12s, background 0.15s;
+}
+.circ:active { transform: scale(0.86); }
+.circ.rec { background: rgba(255,59,48,0.12); animation: recpulse 1s ease infinite; }
+@keyframes recpulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,59,48,0.35); }
+  50% { box-shadow: 0 0 0 5px rgba(255,59,48,0); }
+}
+.inp-box {
+  flex: 1; background: var(--ios-gray6); border-radius: 20px;
+  display: flex; align-items: flex-end;
+  padding: 7px 12px; gap: 6px;
+  border: 1px solid transparent; transition: border-color 0.2s, background 0.2s;
+}
+.inp-box:focus-within {
+  background: var(--surface);
+  border-color: rgba(0,122,255,0.22);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.09);
+}
+#msg-input {
+  flex: 1; border: none; outline: none; background: transparent;
+  font-family: var(--font); font-size: 16px; color: var(--text);
+  resize: none; max-height: 110px; line-height: 1.4; padding: 0; align-self: center;
+}
+#msg-input::placeholder { color: var(--ios-gray3); }
+.send-circ {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--ios-blue); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; align-self: flex-end; transition: transform 0.1s;
+}
+.send-circ:active { transform: scale(0.84); }
+.send-circ:disabled { background: var(--ios-gray4); }
+.send-circ svg { fill: white; }
+
+/* ─── ATTACH SHEET ─────────────────────────── */
+.backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.38); z-index: 80;
+}
+.backdrop.show { display: block; }
+.sheet {
+  position: fixed; bottom:0; left:0; right:0;
+  background: var(--ios-gray6); border-radius: 14px 14px 0 0;
+  padding: 6px 16px calc(var(--safe-bottom) + 6px);
+  z-index: 81; transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+}
+.sheet.show { transform: translateY(0); }
+.sheet-handle {
+  width: 36px; height: 4px; background: var(--ios-gray3);
+  border-radius: 2px; margin: 5px auto 14px;
+}
+.sheet-lbl {
+  font-size: 13px; font-weight: 600; color: var(--ios-gray);
+  text-align: center; margin-bottom: 14px; letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.sheet-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 12px; }
+.s-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; background: none; border: none; cursor: pointer;
+}
+.s-ic {
+  width: 52px; height: 52px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.s-item span { font-size: 11px; font-weight: 500; color: var(--text-secondary); }
+.s-item:active .s-ic { opacity: 0.68; }
+.si1 { background: linear-gradient(135deg,#FF2D55,#FF6B9D); }
+.si2 { background: linear-gradient(135deg,#007AFF,#5AC8FA); }
+.si3 { background: linear-gradient(135deg,#FF9500,#FFCC02); }
+.si4 { background: linear-gradient(135deg,#34C759,#30D158); }
+.sheet-cancel {
+  display: block; width: 100%; padding: 14px;
+  background: var(--surface); border: none; border-radius: 13px;
+  font-family: var(--font); font-size: 17px; font-weight: 600;
+  color: var(--ios-blue); cursor: pointer;
+}
+.sheet-cancel:active { opacity: 0.7; }
+
+/* ─── LIGHTBOX ─────────────────────────────── */
+#lightbox {
+  display: none; position: fixed; inset: 0;
+  background: #000; z-index: 200;
+  align-items: center; justify-content: center;
+}
+#lightbox.show { display: flex; }
+#lightbox img, #lightbox video { max-width:100%; max-height:100%; object-fit:contain; }
+.lb-x {
+  position: absolute; top: calc(var(--safe-top) + 10px); right: 14px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,0.14); border: none; color: white;
+  font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── TOAST ────────────────────────────────── */
+#toast {
+  position: fixed; top: calc(var(--safe-top) + 62px);
+  left: 50%; transform: translateX(-50%) translateY(-8px);
+  background: rgba(48,48,48,0.88); color: white;
+  font-size: 14px; font-weight: 500; padding: 8px 16px;
+  border-radius: 20px; opacity: 0; pointer-events: none;
+  transition: opacity 0.22s, transform 0.22s;
+  z-index: 300; white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+#toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
+
+/* ─── MSG ANIM ─────────────────────────────── */
+.mrow { animation: mIn 0.18s ease; }
+@keyframes mIn {
+  from { opacity:0; transform:scale(0.94) translateY(5px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+#file-input { display:none; }
+</style>
+</head>
+<body>
+
+<!-- Splash -->
+<div class="screen" id="splash">
+  <div class="splash-icon">💬</div>
+  <div class="splash-name">M & N</div>
+  <div class="splash-sub">Private Messages</div>
+  <div class="splash-spin"></div>
+</div>
+
+<!-- Login -->
+<div class="screen hidden" id="login">
+  <div class="login-top">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Sign In</div>
+    <div class="login-sub">M & N Private Chat</div>
+  </div>
+  <div class="login-body">
+    <div class="ios-group">
+      <div class="ios-row">
+        <label>Name</label>
+        <input id="l-user" type="text" placeholder="Mahim or Nur" autocomplete="username"/>
+      </div>
+      <div class="ios-row">
+        <label>Password</label>
+        <input id="l-pass" type="password" placeholder="Required" autocomplete="current-password"/>
+      </div>
+    </div>
+    <button class="ios-btn" onclick="doLogin()">Continue</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- Chat -->
+<div class="screen hidden" id="chat">
+  <div class="chat-hdr">
+    <div class="duo-av">
+      <div class="av1">M</div>
+      <div class="av2">N</div>
+    </div>
+    <div class="hdr-info">
+      <div class="hdr-name">Mahim & Nur</div>
+      <div class="hdr-status on" id="hdr-st">Active now</div>
+    </div>
+    <button class="hdr-ico" id="notif-ico" onclick="toggleNotif()">🔔</button>
+    <button class="hdr-ico" onclick="doLogout()" style="font-size:14px">↩</button>
+  </div>
+
+  <div class="msgs" id="msgs"></div>
+
+  <div class="typing-row" id="typing-row">
+    <div class="mav n">N</div>
+    <div class="typing-bub"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="inp-area">
+    <div class="att-pill" id="att-pill">
+      <img id="pill-img" src="" style="display:none"/>
+      <span class="pill-ic" id="pill-ic"></span>
+      <span class="pill-nm" id="pill-nm"></span>
+      <button class="pill-x" onclick="cancelAttach()">✕</button>
+    </div>
+    <div class="inp-row">
+      <button class="circ" onclick="openSheet()">＋</button>
+      <div class="inp-box">
+        <textarea id="msg-input" placeholder="Message" rows="1"
+          oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+      </div>
+      <button class="circ" id="rec-btn" onclick="toggleRec()">🎙</button>
+      <button class="send-circ" onclick="sendMsg()">
+        <svg width="13" height="13" viewBox="0 0 24 24"><path d="M2 21L23 12 2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Sheet -->
+<div class="backdrop" id="bd" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-lbl">Share</div>
+  <div class="sheet-grid">
+    <button class="s-item" onclick="pickFile('image/*')">
+      <div class="s-ic si1">🖼</div><span>Photo</span>
+    </button>
+    <button class="s-item" onclick="pickFile('video/*')">
+      <div class="s-ic si2">🎬</div><span>Video</span>
+    </button>
+    <button class="s-item" onclick="pickFile('audio/*')">
+      <div class="s-ic si3">🎵</div><span>Audio</span>
+    </button>
+    <button class="s-item" onclick="pickFile('.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.zip')">
+      <div class="s-ic si4">📄</div><span>File</span>
+    </button>
+  </div>
+  <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button class="lb-x" onclick="closeLb()">✕</button>
+  <img id="lb-img" src="" style="display:none"/>
+  <video id="lb-vid" controls playsinline style="display:none"></video>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="file-input" onchange="onFilePick(event)"/>
+
+<script>
+let me=null, pendFile=null, pendType=null;
+let recording=false, mRec=null, aChunks=[];
+let lastTs=0, sse=null, notifOn=false;
+let prevUser=null, prevTs=0;
+
+// Boot
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const s = localStorage.getItem('mn_u');
+    if (s) { me=s; show('chat'); initChat(); }
+    else show('login');
+  }, 1400);
+});
+
+function show(id) {
+  ['splash','login','chat'].forEach(s =>
+    document.getElementById(s).classList.toggle('hidden', s!==id)
+  );
+}
+
+// Login
+async function doLogin() {
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const err=document.getElementById('login-err');
+  err.textContent='';
+  try {
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(d.ok){ me=u; localStorage.setItem('mn_u',u); show('chat'); initChat(); }
+    else err.textContent='Incorrect name or password.';
+  } catch { err.textContent='Connection error.'; }
+}
+document.getElementById('l-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  localStorage.removeItem('mn_u');
+  me=null; lastTs=0; prevUser=null;
+  if(sse){sse.close();sse=null;}
+  document.getElementById('msgs').innerHTML='';
+  show('login');
+}
+
+// Chat
+function initChat() {
+  loadMsgs();
+  startSSE();
+  if(Notification.permission==='granted'){notifOn=true;updNotifBtn();}
+}
+
+function startSSE() {
+  if(sse) sse.close();
+  sse=new EventSource('/api/sse');
+  sse.onmessage=e=>{
+    JSON.parse(e.data).forEach(m=>addMsg(m));
+    scrollBot();
+  };
+  sse.onerror=()=>{sse.close();setTimeout(startSSE,3000);};
+}
+
+async function loadMsgs() {
+  try {
+    const r=await fetch('/api/messages');
+    const msgs=await r.json();
+    const wrap=document.getElementById('msgs');
+    wrap.innerHTML=''; prevUser=null; prevTs=0;
+    let lastDay='';
+    msgs.forEach(m=>{
+      const d=dayLbl(m.ts);
+      if(d!==lastDay){addDayLbl(d);lastDay=d;}
+      addMsg(m,true);
+    });
+    if(msgs.length){lastTs=msgs[msgs.length-1].ts;scrollBot(true);}
+  } catch {}
+}
+
+function dayLbl(ts) {
+  const d=new Date(ts),n=new Date();
+  if(d.toDateString()===n.toDateString()) return 'Today';
+  const y=new Date(n); y.setDate(y.getDate()-1);
+  if(d.toDateString()===y.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+}
+function addDayLbl(t) {
+  const el=document.createElement('div');
+  el.className='day-lbl'; el.textContent=t;
+  document.getElementById('msgs').appendChild(el);
+}
+
+function addMsg(msg, bulk=false) {
+  if(!bulk && document.querySelector(`[data-id="${msg.id}"]`)) return;
+  if(msg.ts>lastTs) lastTs=msg.ts;
+
+  const isMe=msg.username===me;
+  const isM=msg.username==='Mahim';
+  const avCls=isM?'m':'n';
+  const grouped=(msg.username===prevUser)&&(msg.ts-prevTs<60000);
+  prevUser=msg.username; prevTs=msg.ts;
+
+  const time=new Date(msg.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  const row=document.createElement('div');
+  row.className=`mrow${isMe?' out':''}`;
+  row.dataset.id=msg.id;
+
+  let bContent='', bCls='';
+  if(msg.type==='text') {
+    bContent=escH(msg.text).replace(/\n/g,'<br>');
+  } else if(msg.type==='image') {
+    bCls=' media';
+    bContent=`<img src="${msg.fileUrl}" onclick="openLb('img','${msg.fileUrl}')" loading="lazy"/>`;
+    if(msg.text) bContent+=`<div class="mcap">${escH(msg.text)}</div>`;
+  } else if(msg.type==='video') {
+    bCls=' media';
+    bContent=`<video src="${msg.fileUrl}" onclick="openLb('vid','${msg.fileUrl}')" preload="metadata" playsinline></video>`;
+    if(msg.text) bContent+=`<div class="mcap">${escH(msg.text)}</div>`;
+  } else if(msg.type==='audio') {
+    bContent=`<audio controls src="${msg.fileUrl}" preload="metadata"></audio>`;
+    if(msg.text) bContent+=`<div style="font-size:13px;margin-top:4px">${escH(msg.text)}</div>`;
+  } else {
+    const ic=fIcon(msg.fileName||'');
+    bContent=`<a class="doc-row" href="${msg.fileUrl}" target="_blank" download="${escH(msg.fileName||'file')}">
+      <div class="doc-ic">${ic}</div>
+      <div class="doc-meta">
+        <div class="doc-nm">${escH(msg.fileName||'File')}</div>
+        <div class="doc-sz">${msg.fileSize?fmtSz(msg.fileSize):''}</div>
+      </div></a>`;
+    if(msg.text) bContent+=`<div style="margin-top:6px;font-size:14px">${escH(msg.text)}</div>`;
+  }
+
+  const gc=grouped?' g':'';
+  const inOut=isMe?'out':'in';
+
+  if(isMe) {
+    row.innerHTML=`
+      <div class="mcol">
+        ${!grouped?`<div class="mtime">${time}</div>`:''}
+        <div class="bub out${gc}${bCls}">${bContent}</div>
+      </div>`;
+  } else {
+    row.innerHTML=`
+      <div class="mav ${avCls}${grouped?' hide':''}">${msg.username[0]}</div>
+      <div class="mcol">
+        ${!grouped?`<div class="sender-name ${avCls}">${msg.username}</div>`:''}
+        <div class="bub in${gc}${bCls}">${bContent}</div>
+        ${!grouped?`<div class="mtime">${time}</div>`:''}
+      </div>`;
+  }
+
+  document.getElementById('msgs').appendChild(row);
+  if(!bulk && msg.username!==me && notifOn && document.hidden) pushNotif(msg);
+}
+
+// Send
+async function sendMsg() {
+  const inp=document.getElementById('msg-input');
+  const txt=inp.value.trim();
+  if(pendFile) {
+    await doUpload(pendFile,pendType,txt);
+    cancelAttach(); inp.value=''; autoResize(inp); return;
+  }
+  if(!txt) return;
+  inp.value=''; autoResize(inp);
+  await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:me,text:txt,type:'text'})})
+    .catch(()=>toast('Failed to send'));
+}
+
+async function doUpload(file,type,caption='') {
+  toast('Uploading…');
+  const fd=new FormData();
+  fd.append('file',file); fd.append('username',me);
+  try {
+    const r=await fetch('/api/upload',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!d.url) throw 0;
+    await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:me,text:caption,type,fileUrl:d.url,fileName:d.name,fileSize:d.size})});
+  } catch { toast('Upload failed'); }
+}
+
+// File
+function pickFile(accept) {
+  const fi=document.getElementById('file-input');
+  fi.accept=accept; fi.click(); closeSheet();
+}
+function onFilePick(e) {
+  const f=e.target.files[0]; if(!f) return; e.target.value='';
+  const t=f.type.startsWith('image/')?'image':f.type.startsWith('video/')?'video':f.type.startsWith('audio/')?'audio':'document';
+  pendFile=f; pendType=t;
+  const pill=document.getElementById('att-pill');
+  document.getElementById('pill-nm').textContent=f.name+' · '+fmtSz(f.size);
+  const img=document.getElementById('pill-img');
+  const ic=document.getElementById('pill-ic');
+  if(t==='image'){img.src=URL.createObjectURL(f);img.style.display='';ic.textContent='';}
+  else{img.style.display='none';ic.textContent=fIcon(f.name);}
+  pill.classList.add('show');
+}
+function cancelAttach() {
+  pendFile=null;pendType=null;
+  document.getElementById('att-pill').classList.remove('show');
+  document.getElementById('pill-img').src='';
+}
+
+// Record
+async function toggleRec() {
+  if(!recording) {
+    try {
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mRec=new MediaRecorder(stream); aChunks=[];
+      mRec.ondataavailable=e=>aChunks.push(e.data);
+      mRec.onstop=()=>{
+        const blob=new Blob(aChunks,{type:'audio/webm'});
+        const f=new File([blob],`voice-${Date.now()}.webm`,{type:'audio/webm'});
+        stream.getTracks().forEach(t=>t.stop());
+        pendFile=f; pendType='audio';
+        const pill=document.getElementById('att-pill');
+        document.getElementById('pill-nm').textContent=f.name;
+        document.getElementById('pill-img').style.display='none';
+        document.getElementById('pill-ic').textContent='🎙';
+        pill.classList.add('show');
+      };
+      mRec.start(); recording=true;
+      document.getElementById('rec-btn').classList.add('rec');
+      toast('Recording…');
+    } catch { toast('Mic access denied'); }
+  } else {
+    mRec.stop(); recording=false;
+    document.getElementById('rec-btn').classList.remove('rec');
+  }
+}
+
+// Sheet
+function openSheet() {
+  document.getElementById('bd').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
+}
+function closeSheet() {
+  document.getElementById('bd').classList.remove('show');
+  document.getElementById('sheet').classList.remove('show');
+}
+
+// Notifications
+async function toggleNotif() {
+  if(!('Notification' in window)){toast('Not supported');return;}
+  if(Notification.permission==='denied'){toast('Blocked in browser settings');return;}
+  if(Notification.permission!=='granted') {
+    const p=await Notification.requestPermission();
+    notifOn=p==='granted';
+  } else notifOn=!notifOn;
+  updNotifBtn();
+  toast(notifOn?'Notifications on':'Notifications off');
+}
+function updNotifBtn() {
+  const b=document.getElementById('notif-ico');
+  b.textContent=notifOn?'🔔':'🔕';
+  b.classList.toggle('notif-on',notifOn);
+}
+function pushNotif(msg) {
+  if(Notification.permission!=='granted') return;
+  const body=msg.type==='text'?msg.text:`[${msg.type}]`;
+  const n=new Notification(msg.username,{body,tag:'chat'});
+  n.onclick=()=>{window.focus();n.close();};
+  setTimeout(()=>n.close(),5000);
+}
+
+// Lightbox
+function openLb(kind,src) {
+  const lb=document.getElementById('lightbox');
+  const img=document.getElementById('lb-img');
+  const vid=document.getElementById('lb-vid');
+  if(kind==='img'){img.src=src;img.style.display='';vid.style.display='none';}
+  else{vid.src=src;vid.style.display='';img.style.display='none';}
+  lb.classList.add('show');
+}
+function closeLb() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lb-vid').pause();
+}
+
+// Utils
+function scrollBot(instant=false) {
+  const w=document.getElementById('msgs');
+  w.scrollTo({top:w.scrollHeight,behavior:instant?'auto':'smooth'});
+}
+function autoResize(el) {
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,110)+'px';
+}
+function handleKey(e) {
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}
+}
+function escH(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtSz(b){
+  if(b<1024) return b+'B';
+  if(b<1048576) return (b/1024).toFixed(1)+'KB';
+  return (b/1048576).toFixed(1)+'MB';
+}
+function fIcon(n){
+  const e=n.split('.').pop().toLowerCase();
+  return {pdf:'📄',doc:'📝',docx:'📝',txt:'📃',xls:'📊',xlsx:'📊',ppt:'📋',pptx:'📋',zip:'🗜',rar:'🗜',mp3:'🎵',wav:'🎵',ogg:'🎵',mp4:'🎬',mov:'🎬',avi:'🎬',webm:'🎬',png:'🖼',jpg:'🖼',jpeg:'🖼',gif:'🎞',webp:'🖼'}[e]||'📁';
+}
+function toast(msg,dur=2100){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+</script>
+</body>
+</html>
